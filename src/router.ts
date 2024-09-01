@@ -23,8 +23,8 @@ async function handleWebhook(req: Request & { token: string }, env: ENV): Promis
             return new Response('Unauthorized', { status: 401 });
         }
         const update = await req.json() as Telegram.Update;
-				const client = createAPIClient(req.token);
-				const bot = createBotServer();
+        const client = createAPIClient(req.token);
+        const bot = createBotServer();
         return bot.fetch(update, client, env.ADMIN_CHAT_ID?.split(',') || []);
     } catch (e) {
         console.error((e as Error).message);

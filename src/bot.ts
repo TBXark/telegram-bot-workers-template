@@ -1,7 +1,6 @@
 import { MatchType, TelegramRouter, UpdateType } from 'telegram-router';
 import type * as Telegram from 'telegram-bot-api-types';
 import type { APIClient } from './api';
-import { createAPIClient } from './api';
 
 const welcome = 'Press any number to append it to the message.';
 const keyboard = [
@@ -147,12 +146,10 @@ function handleAdminCommand(update: Telegram.Update, client: APIClient, admins: 
 }
 
 export function createBotServer(): TelegramRouter<Response> {
-    const bot = new TelegramRouter<Response>()
-		bot.with((update): Promise<void | Response> => {
-				console.log(JSON.stringify(update));
-				return undefined;
-		});
-
+    const bot = new TelegramRouter<Response>();
+    bot.with((update) => {
+        console.log(JSON.stringify(update));
+    });
 
     bot.handleWith('num:', UpdateType.CallbackQuery, MatchType.Prefix, handleNumInput);
     bot.handleWith('act:del', UpdateType.CallbackQuery, MatchType.Exact, handleDelAction);
