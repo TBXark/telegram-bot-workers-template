@@ -8,8 +8,12 @@
  * Learn more at https://developers.cloudflare.com/workers/
  */
 
+import type { ExecutionContext } from '@cloudflare/workers-types';
+import type { ENV } from './types';
+import { createRouter } from './router';
+
 export default {
-	async fetch(request, env, ctx) {
-		return new Response('Hello World!');
-	},
+    async fetch(request: Request, env: ENV, ctx: ExecutionContext): Promise<Response> {
+        return createRouter().fetch(request, env, ctx);
+    },
 };

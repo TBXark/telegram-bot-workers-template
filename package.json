@@ -1,16 +1,24 @@
 {
-  "name": "telegram-bot-workers-template",
-  "version": "0.0.0",
-  "private": true,
-  "scripts": {
-    "deploy": "wrangler deploy",
-    "dev": "wrangler dev",
-    "start": "wrangler dev",
-    "test": "vitest"
-  },
-  "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "^0.4.5",
-    "wrangler": "^3.60.3",
-    "vitest": "1.5.0"
-  }
+	"name": "telegram-bot-workers-template",
+	"version": "0.0.0",
+	"type": "module",
+	"scripts": {
+		"deploy": "wrangler deploy -c wrangler-prod.toml",
+		"dev": "wrangler dev -c wrangler-prod.toml",
+		"start": "wrangler dev  -c wrangler-prod.toml",
+		"test": "tsx test/index.ts",
+		"lint": "eslint --fix src"
+	},
+	"devDependencies": {
+		"@antfu/eslint-config": "^3.0.0",
+		"@cloudflare/workers-types": "^4.20240821.1",
+		"cloudflare-worker-adapter": "^1.3.2",
+		"telegram-bot-api-types": "^7.9.12",
+		"tsx": "^4.19.0",
+		"wrangler": "^3.60.3"
+	},
+	"dependencies": {
+		"itty-router": "^5.0.18",
+		"telegram-router": "1.0.4"
+	}
 }
