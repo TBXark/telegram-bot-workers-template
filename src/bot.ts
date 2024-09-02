@@ -3,7 +3,7 @@ import type * as Telegram from 'telegram-bot-api-types';
 import type { APIClient } from './api';
 
 const welcome = 'Press any number to append it to the message.';
-const keyboard = [
+const keyboard: Telegram.InlineKeyboardButton[][] = [
     [
         { text: '1', callback_data: 'num:1' },
         { text: '2', callback_data: 'num:2' },
@@ -107,11 +107,24 @@ function handleDelAction(update: Telegram.Update, client: APIClient): Promise<Re
 
 function handleSumAction(update: Telegram.Update, client: APIClient): Promise<Response> {
     let text = '';
-    if ('text' in update.callback_query.message) {
-        if (update.callback_query.message.text) {
-            text = calculateExpression(update.callback_query.message.text).toFixed().toString();
-        }
-    }
+    try {
+			if ('text' in update.callback_query.message) {
+				if (update.callback_query.message.text) {
+					const res = calculateExpression(update.callback_query.message.text).toFixed();
+					if (res === 'NaN' || res === 'Infinity') {
+						throw new Error('Invalid expression');
+					}
+					text = res.toString();
+				}
+			}
+		} catch (e) {
+			return client.editMessageText({
+				chat_id: update.callback_query.message.chat.id,
+				message_id: update.callback_query.message.message_id,
+				text: `Invalid expression: ${(e as Error).message}`,
+				reply_markup: null,
+			});
+		}
     return client.editMessageText({
         chat_id: update.callback_query.message.chat.id,
         message_id: update.callback_query.message.message_id,
