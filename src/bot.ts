@@ -1,6 +1,7 @@
 import { MatchType, TelegramRouter, UpdateType } from 'telegram-router';
 import type * as Telegram from 'telegram-bot-api-types';
 import type { APIClient } from './api';
+import type { ENV } from './types';
 
 const welcome = 'Press any number to append it to the message.';
 const keyboard: Telegram.InlineKeyboardButton[][] = [
@@ -108,23 +109,23 @@ function handleDelAction(update: Telegram.Update, client: APIClient): Promise<Re
 function handleSumAction(update: Telegram.Update, client: APIClient): Promise<Response> {
     let text = '';
     try {
-			if ('text' in update.callback_query.message) {
-				if (update.callback_query.message.text) {
-					const res = calculateExpression(update.callback_query.message.text).toFixed();
-					if (res === 'NaN' || res === 'Infinity') {
-						throw new Error('Invalid expression');
-					}
-					text = res.toString();
-				}
-			}
-		} catch (e) {
-			return client.editMessageText({
-				chat_id: update.callback_query.message.chat.id,
-				message_id: update.callback_query.message.message_id,
-				text: `Invalid expression: ${(e as Error).message}`,
-				reply_markup: null,
-			});
-		}
+        if ('text' in update.callback_query.message) {
+            if (update.callback_query.message.text) {
+                const res = calculateExpression(update.callback_query.message.text).toFixed();
+                if (res === 'NaN' || res === 'Infinity') {
+                    throw new Error('Invalid expression');
+                }
+                text = res.toString();
+            }
+        }
+    } catch (e) {
+        return client.editMessageText({
+            chat_id: update.callback_query.message.chat.id,
+            message_id: update.callback_query.message.message_id,
+            text: `Invalid expression: ${(e as Error).message}`,
+            reply_markup: null,
+        });
+    }
     return client.editMessageText({
         chat_id: update.callback_query.message.chat.id,
         message_id: update.callback_query.message.message_id,
@@ -145,8 +146,8 @@ function handleStartCommand(update: Telegram.Update, client: APIClient): Promise
     });
 }
 
-function handleAdminCommand(update: Telegram.Update, client: APIClient, admins: string[]): Promise<Response> {
-    if (admins.includes(update.message.chat.id.toString())) {
+function handleAdminCommand(update: Telegram.Update, client: APIClient, env: ENV): Promise<Response> {
+    if (env.ADMIN_CHAT_ID?.split(',').includes(update.message.chat.id.toString())) {
         return client.sendMessage({
             chat_id: update.message.chat.id,
             text: 'Hello, Admin!',
@@ -170,5 +171,9 @@ export function createBotServer(): TelegramRouter<Response> {
     bot.handleWith('/start', UpdateType.Message, MatchType.Exact, handleStartCommand);
     bot.handleWith('/admin', UpdateType.Message, MatchType.Exact, handleAdminCommand);
 
+    bot.handle(() => true, async (u: Telegram.Update): Promise<Response> => {
+        console.warn('No handler found for', JSON.stringify(u));
+        return new Response('No handler', { status: 200 });
+    });
     return bot;
 }
